@@ -1,0 +1,57 @@
+.hero {
+  background: url('https://images.pexels.com/photos/5632371/pexels-photo-5632371.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'),
+              #49799D; 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  padding: 0 8%;
+}
+
+
+.hero-content {
+  color: black;
+  max-width: 1200px;
+}
+
+.hero-content h1 {
+  font-size: 4rem;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.hero-content h2 {
+  font-size: 2.5rem;
+  font-weight: 300;
+  line-height: 1.2;
+  margin-bottom: 2rem;
+}
+
+.hero-discovery-btn {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: white;
+  width: fit-content;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-discovery-btn:hover {
+  background: #333;
+}
+
+.hero-discovery-btn span {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hero-discovery-btn img {
+  width: 20px;
+}
