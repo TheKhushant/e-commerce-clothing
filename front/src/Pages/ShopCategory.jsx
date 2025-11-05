@@ -9,7 +9,17 @@ const useProductFilter = (allProducts, category) => {
     priceRange: [500, 10000],
     ratings: 0,
     availability: "all",
-    subCategories: []
+    subCategories: [],
+    discounts: [],
+    colors: [],
+    sizes: [],
+    occasions: [],
+    prints: [],
+    materials: [],
+    sleeves: [],
+    neckTypes: [],
+    characters: [],
+    exclusive: false
   });
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,7 +30,6 @@ const useProductFilter = (allProducts, category) => {
     let filtered = allProducts.filter(product => 
       product.category?.toLowerCase() === category?.toLowerCase()
     );
-
 
     // Apply price filter
     filtered = filtered.filter(product => 
@@ -35,11 +44,37 @@ const useProductFilter = (allProducts, category) => {
       );
     }
 
-    // Apply availability filter (mock - assuming all are in stock for now)
+    // Apply availability filter
     if (filters.availability === "in-stock") {
       filtered = filtered.filter(product => product.in_stock === undefined || product.in_stock === true);
     }
 
+    // Apply discount filter
+    if (filters.discounts.length > 0) {
+      filtered = filtered.filter(product => {
+        const discount = ((product.old_price - product.new_price) / product.old_price) * 100;
+        return filters.discounts.some(range => {
+          if (range === "0-20") return discount >= 0 && discount <= 20;
+          if (range === "21-40") return discount >= 21 && discount <= 40;
+          if (range === "41-60") return discount >= 41 && discount <= 60;
+          if (range === "61-80") return discount >= 61 && discount <= 80;
+          if (range === "81-100") return discount >= 81 && discount <= 100;
+          return false;
+        });
+      });
+    }
+
+    // Apply color filter
+    if (filters.colors.length > 0) {
+      filtered = filtered.filter(product => 
+        filters.colors.includes(product.color?.toLowerCase())
+      );
+    }
+
+    // Apply exclusive filter
+    if (filters.exclusive) {
+      filtered = filtered.filter(product => product.exclusive === true);
+    }
 
     return filtered;
   }, [allProducts, category, filters]);
@@ -61,9 +96,11 @@ const useProductFilter = (allProducts, category) => {
           const discountB = ((b.old_price - b.new_price) / b.old_price) * 100;
           return discountB - discountA;
         });
+      case "trending":
+        return sorted.sort((a, b) => (b.trending || 0) - (a.trending || 0));
       case "newest":
       default:
-        return sorted; // Assuming products are already in order by ID
+        return sorted;
     }
   }, [filteredProducts, sortBy]);
 
@@ -77,7 +114,17 @@ const useProductFilter = (allProducts, category) => {
 
   const updateFilter = useCallback((key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
+  }, []);
+
+  const updateArrayFilter = useCallback((key, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: prev[key].includes(value) 
+        ? prev[key].filter(item => item !== value)
+        : [...prev[key], value]
+    }));
+    setCurrentPage(1);
   }, []);
 
   const resetFilters = useCallback(() => {
@@ -85,7 +132,17 @@ const useProductFilter = (allProducts, category) => {
       priceRange: [0, 10000],
       ratings: 0,
       availability: "all",
-      subCategories: []
+      subCategories: [],
+      discounts: [],
+      colors: [],
+      sizes: [],
+      occasions: [],
+      prints: [],
+      materials: [],
+      sleeves: [],
+      neckTypes: [],
+      characters: [],
+      exclusive: false
     });
     setCurrentPage(1);
   }, []);
@@ -100,6 +157,7 @@ const useProductFilter = (allProducts, category) => {
     itemsPerPage,
     totalProducts: filteredProducts.length,
     updateFilter,
+    updateArrayFilter,
     setSortBy,
     setCurrentPage,
     resetFilters
@@ -116,15 +174,87 @@ const ProductSkeleton = () => (
   </div>
 );
 
+// Collapsible Filter Section Component
+const CollapsibleFilterSection = ({ title, children, isOpen, onToggle }) => {
+  return (
+    <div className={`filter-group collapsible ${isOpen ? 'open' : ''}`}>
+      <div className="filter-header-collapsible" onClick={onToggle}>
+        <h4>{title}</h4>
+        <span className="collapse-icon">
+          {isOpen ? '−' : '+'}
+        </span>
+      </div>
+      {isOpen && (
+        <div className="filter-content">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Filter Sidebar Component
-const FilterSidebar = ({ filters, updateFilter, resetFilters, isMobileOpen, onClose }) => {
-  const priceMarks = {
-    0: '₹0',
-    2500: '₹2.5k',
-    5000: '₹5k',
-    7500: '₹7.5k',
-    10000: '₹10k+'
+const FilterSidebar = ({ filters, updateFilter, updateArrayFilter, resetFilters, isMobileOpen, onClose }) => {
+  const [openSections, setOpenSections] = useState({
+    price: true,
+    discounts: false,
+    colors: false,
+    sizes: false,
+    ratings: false,
+    occasions: false,
+    prints: false,
+    materials: false,
+    sleeves: false,
+    neckTypes: false,
+    characters: false,
+    availability: false
+  });
+
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
   };
+
+  const discountRanges = [
+    { value: "0-20", label: "0% To 20%" },
+    { value: "21-40", label: "21% To 40%" },
+    { value: "41-60", label: "41% To 60%" },
+    { value: "61-80", label: "61% To 80%" },
+    { value: "81-100", label: "81% To 100%" }
+  ];
+
+  const colors = [
+    "multi", "blue", "white", "black", "red", "green", "yellow", "grey", "navy blue", "orange", 
+    "pink", "light blue", "beige", "brown", "maroon", "purple", "olive", "mustard", "teal", 
+    "peach", "lavender", "ai aqua", "turquoise", "off white", "cream", "neo mint", "sea green", 
+    "lime", "burgundy", "coral", "charcoal", "grey melange", "rust", "rosewater", "mauve", 
+    "bottle green", "gold", "purist blue", "magenta", "neon", "lemon sherbet", "mellow yellow", 
+    "print", "silver", "neutral", "nude", "taupe", "tan", "steel", "khaki"
+  ];
+
+  const sizes = [
+    "0-3 m", "6-9 m", "9-12 m", "12-18 m", "18-24 m", "2-3 y", "3-4 y", "4-5 y", "6-7 y", 
+    "7-8 y", "8-9 y", "9-10 y", "10-11 y", "11-12 y", "12-13 y", "13-14 y", "14-15 y", "15-16 y"
+  ];
+
+  const occasions = ["casual wear", "active wear", "loungewear"];
+  const prints = [
+    "printed", "graphic", "stripes", "typographic", "solids", "colour block", "placement print", 
+    "front & back print", "self design", "tie & dye", "back print", "florals", "quirky", "checks", 
+    "solid with work", "abstract", "camouflage", "polka dots", "tropical", "geometric"
+  ];
+  const materials = ["cotton", "cotton blend", "poly cotton", "polyester", "viscose"];
+  const sleeves = ["short sleeves", "long sleeves", "sleeveless", "three quarter"];
+  const neckTypes = [
+    "round", "polo neck", "v neck", "crew neck", "hooded", "henleys neck", 
+    "mandarin", "turtle neck", "stand collar"
+  ];
+  const characters = [
+    "dinosaur", "marvel", "mickey & friends", "star wars", "tom & jerry", 
+    "avengers", "iron man", "minions", "thomas & friends"
+  ];
 
   return (
     <div className={`filter-sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
@@ -141,38 +271,39 @@ const FilterSidebar = ({ filters, updateFilter, resetFilters, isMobileOpen, onCl
       </div>
 
       {/* Price Range Filter */}
-      <div className="filter-group">
-      <h4>Price Range</h4>
-      <div className="price-range-advanced">
-        <div className="range-inputs">
-          <input
-            type="range"
-            min="0"
-            max="10000"
-            step="100"
-            value={filters.priceRange[0]}
-            onChange={(e) => {
-              const minVal = Math.min(parseInt(e.target.value), filters.priceRange[1] - 500);
-              updateFilter("priceRange", [minVal, filters.priceRange[1]]);
-            }}
-            onFocus={(e) => e.target.scrollIntoView({ block: "nearest" })}
-            className="range-min"
-          />
-          <input
-            type="range"
-            min="0"
-            max="10000"
-            step="100"
-            value={filters.priceRange[1]}
-            onChange={(e) => {
-              const maxVal = Math.max(parseInt(e.target.value), filters.priceRange[0] + 500);
-              updateFilter("priceRange", [filters.priceRange[0], maxVal]);
-            }}
-            className="range-max"
-          />
-        </div>
+      <CollapsibleFilterSection 
+        title="Price Range" 
+        isOpen={openSections.price}
+        onToggle={() => toggleSection('price')}
+      >
+        <div className="price-range-advanced">
+          <div className="range-inputs">
+            <input
+              type="range"
+              min="0"
+              max="10000"
+              step="100"
+              value={filters.priceRange[0]}
+              onChange={(e) => {
+                const minVal = Math.min(parseInt(e.target.value), filters.priceRange[1] - 500);
+                updateFilter("priceRange", [minVal, filters.priceRange[1]]);
+              }}
+              className="range-min"
+            />
+            <input
+              type="range"
+              min="0"
+              max="10000"
+              step="100"
+              value={filters.priceRange[1]}
+              onChange={(e) => {
+                const maxVal = Math.max(parseInt(e.target.value), filters.priceRange[0] + 500);
+                updateFilter("priceRange", [filters.priceRange[0], maxVal]);
+              }}
+              className="range-max"
+            />
+          </div>
 
-          {/* Input boxes for direct number entry */}
           <div className="price-input-boxes">
             <div>
               <label>Min:</label>
@@ -210,12 +341,75 @@ const FilterSidebar = ({ filters, updateFilter, resetFilters, isMobileOpen, onCl
             <span>₹{filters.priceRange[1]}</span>
           </div>
         </div>
-      </div>
+      </CollapsibleFilterSection>
 
+      {/* Discount Filter */}
+      <CollapsibleFilterSection 
+        title="Discounts" 
+        isOpen={openSections.discounts}
+        onToggle={() => toggleSection('discounts')}
+      >
+        {discountRanges.map(range => (
+          <label key={range.value} className="checkbox-filter">
+            <input
+              type="checkbox"
+              checked={filters.discounts.includes(range.value)}
+              onChange={() => updateArrayFilter('discounts', range.value)}
+            />
+            <span className="checkmark"></span>
+            <span>{range.label}</span>
+          </label>
+        ))}
+      </CollapsibleFilterSection>
+
+      {/* Color Filter */}
+      <CollapsibleFilterSection 
+        title="Color" 
+        isOpen={openSections.colors}
+        onToggle={() => toggleSection('colors')}
+      >
+        <div className="color-filter-grid">
+          {colors.map(color => (
+            <label key={color} className="color-filter">
+              <input
+                type="checkbox"
+                checked={filters.colors.includes(color)}
+                onChange={() => updateArrayFilter('colors', color)}
+              />
+              <span className="color-checkmark"></span>
+              <span className="color-name">{color}</span>
+            </label>
+          ))}
+        </div>
+      </CollapsibleFilterSection>
+
+      {/* Size Filter */}
+      <CollapsibleFilterSection 
+        title="Size" 
+        isOpen={openSections.sizes}
+        onToggle={() => toggleSection('sizes')}
+      >
+        <div className="size-filter-grid">
+          {sizes.map(size => (
+            <label key={size} className="size-filter">
+              <input
+                type="checkbox"
+                checked={filters.sizes.includes(size)}
+                onChange={() => updateArrayFilter('sizes', size)}
+              />
+              <span className="size-checkmark"></span>
+              <span>{size}</span>
+            </label>
+          ))}
+        </div>
+      </CollapsibleFilterSection>
 
       {/* Rating Filter */}
-      <div className="filter-group">
-        <h4>Customer Ratings</h4>
+      <CollapsibleFilterSection 
+        title="Customer Ratings" 
+        isOpen={openSections.ratings}
+        onToggle={() => toggleSection('ratings')}
+      >
         {[4, 3, 2, 1].map(rating => (
           <label key={rating} className="rating-filter">
             <input
@@ -229,11 +423,136 @@ const FilterSidebar = ({ filters, updateFilter, resetFilters, isMobileOpen, onCl
             </span>
           </label>
         ))}
+      </CollapsibleFilterSection>
+
+      {/* Additional Filters */}
+      <CollapsibleFilterSection 
+        title="Occasion" 
+        isOpen={openSections.occasions}
+        onToggle={() => toggleSection('occasions')}
+      >
+        {occasions.map(occasion => (
+          <label key={occasion} className="checkbox-filter">
+            <input
+              type="checkbox"
+              checked={filters.occasions.includes(occasion)}
+              onChange={() => updateArrayFilter('occasions', occasion)}
+            />
+            <span className="checkmark"></span>
+            <span>{occasion}</span>
+          </label>
+        ))}
+      </CollapsibleFilterSection>
+
+      <CollapsibleFilterSection 
+        title="Prints & Patterns" 
+        isOpen={openSections.prints}
+        onToggle={() => toggleSection('prints')}
+      >
+        {prints.map(print => (
+          <label key={print} className="checkbox-filter">
+            <input
+              type="checkbox"
+              checked={filters.prints.includes(print)}
+              onChange={() => updateArrayFilter('prints', print)}
+            />
+            <span className="checkmark"></span>
+            <span>{print}</span>
+          </label>
+        ))}
+      </CollapsibleFilterSection>
+
+      <CollapsibleFilterSection 
+        title="Material" 
+        isOpen={openSections.materials}
+        onToggle={() => toggleSection('materials')}
+      >
+        {materials.map(material => (
+          <label key={material} className="checkbox-filter">
+            <input
+              type="checkbox"
+              checked={filters.materials.includes(material)}
+              onChange={() => updateArrayFilter('materials', material)}
+            />
+            <span className="checkmark"></span>
+            <span>{material}</span>
+          </label>
+        ))}
+      </CollapsibleFilterSection>
+
+      <CollapsibleFilterSection 
+        title="Sleeve" 
+        isOpen={openSections.sleeves}
+        onToggle={() => toggleSection('sleeves')}
+      >
+        {sleeves.map(sleeve => (
+          <label key={sleeve} className="checkbox-filter">
+            <input
+              type="checkbox"
+              checked={filters.sleeves.includes(sleeve)}
+              onChange={() => updateArrayFilter('sleeves', sleeve)}
+            />
+            <span className="checkmark"></span>
+            <span>{sleeve}</span>
+          </label>
+        ))}
+      </CollapsibleFilterSection>
+
+      <CollapsibleFilterSection 
+        title="Neck Type" 
+        isOpen={openSections.neckTypes}
+        onToggle={() => toggleSection('neckTypes')}
+      >
+        {neckTypes.map(neckType => (
+          <label key={neckType} className="checkbox-filter">
+            <input
+              type="checkbox"
+              checked={filters.neckTypes.includes(neckType)}
+              onChange={() => updateArrayFilter('neckTypes', neckType)}
+            />
+            <span className="checkmark"></span>
+            <span>{neckType}</span>
+          </label>
+        ))}
+      </CollapsibleFilterSection>
+
+      <CollapsibleFilterSection 
+        title="Character" 
+        isOpen={openSections.characters}
+        onToggle={() => toggleSection('characters')}
+      >
+        {characters.map(character => (
+          <label key={character} className="checkbox-filter">
+            <input
+              type="checkbox"
+              checked={filters.characters.includes(character)}
+              onChange={() => updateArrayFilter('characters', character)}
+            />
+            <span className="checkmark"></span>
+            <span>{character}</span>
+          </label>
+        ))}
+      </CollapsibleFilterSection>
+
+      {/* Exclusive Products */}
+      <div className="filter-group">
+        <label className="checkbox-filter exclusive-filter">
+          <input
+            type="checkbox"
+            checked={filters.exclusive}
+            onChange={(e) => updateFilter('exclusive', e.target.checked)}
+          />
+          <span className="checkmark"></span>
+          <span>Exclusive Products</span>
+        </label>
       </div>
 
       {/* Availability Filter */}
-      <div className="filter-group">
-        <h4>Availability</h4>
+      <CollapsibleFilterSection 
+        title="Availability" 
+        isOpen={openSections.availability}
+        onToggle={() => toggleSection('availability')}
+      >
         <label className="availability-filter">
           <input
             type="radio"
@@ -254,7 +573,7 @@ const FilterSidebar = ({ filters, updateFilter, resetFilters, isMobileOpen, onCl
           />
           In Stock Only
         </label>
-      </div>
+      </CollapsibleFilterSection>
     </div>
   );
 };
@@ -274,6 +593,7 @@ const ShopCategory = (props) => {
     itemsPerPage,
     totalProducts,
     updateFilter,
+    updateArrayFilter,
     setSortBy,
     setCurrentPage,
     resetFilters
@@ -285,18 +605,6 @@ const ShopCategory = (props) => {
     const timer = setTimeout(() => setIsLoading(false), 500);
     return () => clearTimeout(timer);
   }, [filters, sortBy, currentPage]);
-
-  // Mock function for future API integration
-  const fetchProducts = useCallback(async () => {
-    // Future API integration point:
-    // const response = await fetch(`/api/products?category=${props.category}&page=${currentPage}&sort=${sortBy}`);
-    // return await response.json();
-    
-    // Currently using context data
-    return all_product.filter(product => 
-      product.category.toLowerCase() === props.category.toLowerCase()
-    );
-  }, [all_product, props.category, currentPage, sortBy]);
 
   const handleSortChange = (e) => {
     setSortBy(e.target.value);
@@ -391,6 +699,7 @@ const ShopCategory = (props) => {
         <FilterSidebar
           filters={filters}
           updateFilter={updateFilter}
+          updateArrayFilter={updateArrayFilter}
           resetFilters={resetFilters}
           isMobileOpen={showMobileFilters}
           onClose={() => setShowMobileFilters(false)}
@@ -418,10 +727,11 @@ const ShopCategory = (props) => {
                 <label>Sort by:</label>
                 <select value={sortBy} onChange={handleSortChange}>
                   <option value="newest">Newest</option>
-                  <option value="price-low-high">Price: Low to High</option>
-                  <option value="price-high-low">Price: High to Low</option>
+                  <option value="trending">Trending</option>
+                  <option value="discounted">Discounts</option>
+                  <option value="price-high-low">High Price</option>
+                  <option value="price-low-high">Low Price</option>
                   <option value="best-rated">Best Rated</option>
-                  <option value="discounted">Most Discounted</option>
                 </select>
               </div>
             </div>
@@ -463,7 +773,7 @@ const ShopCategory = (props) => {
           {/* Pagination */}
           {products.length > 0 && renderPagination()}
 
-          {/* Load More Button (Alternative to Pagination) */}
+          {/* Load More Button */}
           {currentPage < totalPages && (
             <div className="shopcategory-loadmore">
               <button 
