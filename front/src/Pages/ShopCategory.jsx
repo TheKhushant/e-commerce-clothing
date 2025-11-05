@@ -225,7 +225,7 @@ const FilterSidebar = ({ filters, updateFilter, resetFilters, isMobileOpen, onCl
               onChange={() => updateFilter('ratings', rating)}
             />
             <span className="stars">
-              {'★'.repeat(rating)}{'☆'.repeat(5 - rating)} & above
+              {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
             </span>
           </label>
         ))}
