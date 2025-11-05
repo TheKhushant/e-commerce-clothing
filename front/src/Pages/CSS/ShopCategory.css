@@ -74,6 +74,10 @@
   top: 100px;
   transition: transform 0.3s ease;
 }
+.filter-sidebar input[type="range"] {
+  scroll-behavior: auto;
+}
+
 
 .filter-header {
   display: flex;
@@ -107,16 +111,6 @@
   cursor: pointer;
 }
 
-.filter-group {
-  margin-bottom: 25px;
-}
-
-.filter-group h4 {
-  margin: 0 0 12px 0;
-  font-size: 1rem;
-  color: #333;
-  font-weight: 600;
-}
 
 /* Price Range */
 .price-range {
@@ -558,4 +552,102 @@
   flex-direction: column;
   justify-content: space-between;
   margin-top: 10px;
+}
+/* Advanced Price Range Styling */
+.price-range-advanced {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.range-inputs {
+  position: relative;
+  height: 6px;
+  background: #ddd;
+  border-radius: 3px;
+}
+
+.range-inputs input[type="range"] {
+  position: absolute;
+  width: 100%;
+  top: -6px;
+  pointer-events: none;
+  background: none;
+  appearance: none;
+}
+
+.range-inputs input[type="range"]::-webkit-slider-thumb {
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  background: #ff4141;
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.range-inputs input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #ff4141;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Prevent scroll jump when focusing on range input */
+input[type="range"]:focus {
+  outline: none;
+  scroll-margin-top: 0;
+}
+
+
+/* Number input boxes */
+.price-input-boxes {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-input-boxes label {
+  font-size: 0.85rem;
+  color: #555;
+  margin-right: 5px;
+}
+
+.price-input-boxes input {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.price-input-boxes input:focus {
+  border-color: #ff4141;
+}
+
+.price-separator {
+  font-weight: bold;
+  color: #444;
+}
+
+.price-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.filter-group {
+  margin-bottom: 25px;
+}
+
+.filter-group h4 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: #333;
+  font-weight: 600;
 }

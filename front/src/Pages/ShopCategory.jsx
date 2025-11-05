@@ -6,7 +6,7 @@ import Item from "../Components/Item/Item";
 // Custom hook for filtering and sorting
 const useProductFilter = (allProducts, category) => {
   const [filters, setFilters] = useState({
-    priceRange: [0, 10000],
+    priceRange: [500, 10000],
     ratings: 0,
     availability: "all",
     subCategories: []
@@ -142,23 +142,76 @@ const FilterSidebar = ({ filters, updateFilter, resetFilters, isMobileOpen, onCl
 
       {/* Price Range Filter */}
       <div className="filter-group">
-        <h4>Price Range</h4>
-        <div className="price-range">
+      <h4>Price Range</h4>
+      <div className="price-range-advanced">
+        <div className="range-inputs">
+          <input
+            type="range"
+            min="0"
+            max="10000"
+            step="100"
+            value={filters.priceRange[0]}
+            onChange={(e) => {
+              const minVal = Math.min(parseInt(e.target.value), filters.priceRange[1] - 500);
+              updateFilter("priceRange", [minVal, filters.priceRange[1]]);
+            }}
+            onFocus={(e) => e.target.scrollIntoView({ block: "nearest" })}
+            className="range-min"
+          />
           <input
             type="range"
             min="0"
             max="10000"
             step="100"
             value={filters.priceRange[1]}
-            onChange={(e) => updateFilter('priceRange', [filters.priceRange[0], parseInt(e.target.value)])}
-            className="price-slider"
+            onChange={(e) => {
+              const maxVal = Math.max(parseInt(e.target.value), filters.priceRange[0] + 500);
+              updateFilter("priceRange", [filters.priceRange[0], maxVal]);
+            }}
+            className="range-max"
           />
+        </div>
+
+          {/* Input boxes for direct number entry */}
+          <div className="price-input-boxes">
+            <div>
+              <label>Min:</label>
+              <input
+                type="number"
+                min="0"
+                max="10000"
+                step="100"
+                value={filters.priceRange[0]}
+                onChange={(e) => {
+                  const newMin = Math.min(parseInt(e.target.value) || 0, filters.priceRange[1] - 500);
+                  updateFilter("priceRange", [newMin, filters.priceRange[1]]);
+                }}
+              />
+            </div>
+            <span className="price-separator">-</span>
+            <div>
+              <label>Max:</label>
+              <input
+                type="number"
+                min="0"
+                max="10000"
+                step="100"
+                value={filters.priceRange[1]}
+                onChange={(e) => {
+                  const newMax = Math.max(parseInt(e.target.value) || 0, filters.priceRange[0] + 500);
+                  updateFilter("priceRange", [filters.priceRange[0], newMax]);
+                }}
+              />
+            </div>
+          </div>
+
           <div className="price-labels">
             <span>₹{filters.priceRange[0]}</span>
             <span>₹{filters.priceRange[1]}</span>
           </div>
         </div>
       </div>
+
 
       {/* Rating Filter */}
       <div className="filter-group">
