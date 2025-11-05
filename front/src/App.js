@@ -10,6 +10,9 @@ import Footer from "./Components/Footer/Footer";
 import men_banner from "./Components/Assets/banner_mens.png";
 import women_banner from "./Components/Assets/banner_women.png";
 import kid_banner from "./Components/Assets/banner_kids.png";
+import Women from "./Pages/Women/Women";
+import Men from "./Pages/Men/Men";
+import Kids from "./Pages/Kids/Kids";
 function App() {
   return (
     <div>
@@ -17,6 +20,9 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Shop />} />
+          {/* <Route path="/womens" element={<Women />} />
+          <Route path="/mens" element={<Men />} />
+          <Route path="/kids" element={<Kids />} /> */}
           <Route
             path="/mens"
             element={<ShopCategory banner={men_banner} category="men" />}
