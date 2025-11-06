@@ -210,6 +210,60 @@ const FilterSidebar = ({ filters, updateFilter, updateArrayFilter, resetFilters,
     availability: false
   });
 
+  const colorMap = {
+    multi: 'linear-gradient(45deg, red, yellow, blue, green)',
+    blue: '#0000FF',
+    white: '#FFFFFF',
+    black: '#000000',
+    red: '#FF0000',
+    green: '#008000',
+    yellow: '#FFFF00',
+    grey: '#808080',
+    'navy blue': '#000080',
+    orange: '#FFA500',
+    pink: '#FFC0CB',
+    'light blue': '#ADD8E6',
+    beige: '#F5F5DC',
+    brown: '#A52A2A',
+    maroon: '#800000',
+    purple: '#800080',
+    olive: '#808000',
+    mustard: '#FFDB58',
+    teal: '#008080',
+    peach: '#FFDAB9',
+    lavender: '#E6E6FA',
+    'ai aqua': '#00FFFF',
+    turquoise: '#40E0D0',
+    'off white': '#F8F8F8',
+    cream: '#FFFDD0',
+    'neo mint': '#C5E6A6',
+    'sea green': '#2E8B57',
+    lime: '#00FF00',
+    burgundy: '#800020',
+    coral: '#FF7F50',
+    charcoal: '#36454F',
+    'grey melange': '#BEBEBE',
+    rust: '#B7410E',
+    rosewater: '#F6D5D6',
+    mauve: '#E0B0FF',
+    'bottle green': '#006A4E',
+    gold: '#FFD700',
+    'purist blue': '#3A75C4',
+    magenta: '#FF00FF',
+    neon: '#39FF14',
+    'lemon sherbet': '#FFF44F',
+    'mellow yellow': '#F8DE7E',
+    print: 'linear-gradient(45deg, red, yellow, blue)',
+    silver: '#C0C0C0',
+    neutral: '#D3D3D3',
+    nude: '#E3BC9A',
+    taupe: '#483C32',
+    tan: '#D2B48C',
+    steel: '#7A8B8B',
+    khaki: '#C3B091'
+  };
+
+
   const toggleSection = (section) => {
     setOpenSections(prev => ({
       ...prev,
@@ -376,7 +430,17 @@ const FilterSidebar = ({ filters, updateFilter, updateArrayFilter, resetFilters,
                 checked={filters.colors.includes(color)}
                 onChange={() => updateArrayFilter('colors', color)}
               />
-              <span className="color-checkmark"></span>
+              <span
+                className="color-checkmark"
+                style={{
+                  background:
+                    colorMap[color.toLowerCase()] || '#ccc', // fallback color
+                  borderColor:
+                    ['white', 'off white', 'cream', 'beige'].includes(color.toLowerCase())
+                      ? '#ccc'
+                      : colorMap[color.toLowerCase()] || '#ccc'
+                }}
+              ></span>
               <span className="color-name">{color}</span>
             </label>
           ))}
@@ -397,7 +461,7 @@ const FilterSidebar = ({ filters, updateFilter, updateArrayFilter, resetFilters,
                 checked={filters.sizes.includes(size)}
                 onChange={() => updateArrayFilter('sizes', size)}
               />
-              <span className="size-checkmark"></span>
+              {/* <span className="size-checkmark"></span> */}
               <span>{size}</span>
             </label>
           ))}
@@ -704,6 +768,8 @@ const ShopCategory = (props) => {
           isMobileOpen={showMobileFilters}
           onClose={() => setShowMobileFilters(false)}
         />
+
+        
 
         {/* Main Content */}
         <div className="shopcategory-main">
